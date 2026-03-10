@@ -33,7 +33,7 @@ export default function HomeTab({ holdings }: HomeTabProps) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-400 text-xs font-medium tracking-widest uppercase">Portfolio</p>
-          <h1 className="text-white text-2xl font-bold tracking-tight">LB Wealth</h1>
+          <h1 className="text-white text-2xl font-bold tracking-tight">Invest Quick</h1>
         </div>
         <div className="w-10 h-10 rounded-full bg-[#10d982]/20 flex items-center justify-center">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

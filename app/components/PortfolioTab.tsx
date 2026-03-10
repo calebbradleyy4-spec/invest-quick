@@ -292,16 +292,14 @@ export default function PortfolioTab({ holdings, setHoldings }: PortfolioTabProp
                   </div>
                   <p className="text-slate-500 text-xs truncate">{h.name}</p>
                 </div>
-                {holdings.length > 1 && (
-                  <button
-                    onClick={() => deleteHolding(h.id)}
-                    className="w-7 h-7 rounded-full bg-[#f43f5e]/10 flex items-center justify-center flex-shrink-0 active:bg-[#f43f5e]/20"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6l12 12" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  onClick={() => deleteHolding(h.id)}
+                  className="w-8 h-8 rounded-full bg-[#f43f5e]/15 border border-[#f43f5e]/30 flex items-center justify-center flex-shrink-0 active:bg-[#f43f5e]/30"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               </div>
 
               {/* Card Stats */}

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LB Wealth",
+  title: "Invest Quick",
   description: "Personal portfolio tracker",
 };
 
