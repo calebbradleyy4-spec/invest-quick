@@ -297,6 +297,31 @@ export default function PortfolioTab({ holdings, setHoldings }: PortfolioTabProp
         </button>
       </div>
 
+      {/* Empty state */}
+      {holdings.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 gap-5">
+          <div className="w-20 h-20 rounded-full bg-[#111827] border border-[#1e293b] flex items-center justify-center">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#1e293b" strokeWidth="1.5" fill="#1e293b" />
+              <path d="M12 8v8M8 12h8" stroke="#10d982" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-white text-lg font-semibold">No holdings yet</p>
+            <p className="text-slate-500 text-sm mt-1">Add your first holding to get started</p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2 bg-[#10d982] text-[#0a0e1a] font-bold text-sm px-6 py-3 rounded-2xl active:opacity-90"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#0a0e1a" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+            Add your first holding
+          </button>
+        </div>
+      )}
+
       {/* Holdings Cards */}
       <div className="space-y-3 mb-4">
         {calculated.map((c, i) => {
