@@ -15,9 +15,10 @@ const DEFAULT_FORM = {
   name: '',
   type: 'Stock/ETF' as HoldingType,
   amountInvested: '',
-  expectedReturn: '',
-  beta: '',
-  dividendYield: '',
+  interestRate: '',   // HYSA only — shown to user
+  _expectedReturn: 0, // from lookup — never shown
+  _beta: 0,
+  _dividendYield: 0,
 };
 
 function AmountInput({
@@ -98,21 +99,32 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
 
   const handleTickerChange = (raw: string) => {
     const upper = raw.toUpperCase();
-    setForm((f) => ({ ...f, ticker: upper }));
-    setAutoFilled(false);
-
     const match = lookupTicker(upper);
+
     if (match) {
       setForm((f) => ({
         ...f,
         ticker: upper,
         name: match.name,
         type: match.type,
-        expectedReturn: String(+(match.expectedReturn * 100).toFixed(3)),
-        beta: String(match.beta),
-        dividendYield: String(+(match.dividendYield * 100).toFixed(3)),
+        // For HYSA pre-fill the visible interest rate field too
+        interestRate: match.type === 'HYSA'
+          ? String(+(match.expectedReturn * 100).toFixed(2))
+          : f.interestRate,
+        _expectedReturn: match.expectedReturn,
+        _beta: match.beta,
+        _dividendYield: match.dividendYield,
       }));
       setAutoFilled(true);
+    } else {
+      setForm((f) => ({
+        ...f,
+        ticker: upper,
+        _expectedReturn: 0,
+        _beta: 0,
+        _dividendYield: 0,
+      }));
+      setAutoFilled(false);
     }
   };
 
@@ -121,11 +133,18 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
     if (!form.name.trim()) return setError('Name is required');
     const amount = parseFloat(form.amountInvested);
     if (isNaN(amount) || amount < 0) return setError('Enter a valid amount');
-    const ret = parseFloat(form.expectedReturn);
-    if (isNaN(ret)) return setError('Enter a valid expected return');
-    const beta = parseFloat(form.beta);
-    if (isNaN(beta)) return setError('Enter a valid beta');
-    const div = parseFloat(form.dividendYield) || 0;
+
+    let expectedReturn = form._expectedReturn;
+    let beta = form._beta;
+    let dividendYield = form._dividendYield;
+
+    if (form.type === 'HYSA') {
+      const rate = parseFloat(form.interestRate);
+      if (isNaN(rate) || rate < 0) return setError('Enter a valid interest rate');
+      expectedReturn = rate / 100;
+      dividendYield = rate / 100; // interest = dividend for HYSA
+      beta = 0;
+    }
 
     onAdd({
       id: Date.now().toString(),
@@ -133,12 +152,14 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
       name: form.name.trim(),
       type: form.type,
       amountInvested: amount,
-      expectedReturn: ret / 100,
+      expectedReturn,
       beta,
-      dividendYield: div / 100,
+      dividendYield,
     });
     onClose();
   };
+
+  const isHYSA = form.type === 'HYSA';
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end max-w-md mx-auto left-1/2 -translate-x-1/2 w-full">
@@ -147,9 +168,13 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
         onClick={onClose}
       />
       <div className="relative bg-[#111827] rounded-t-3xl border-t border-[#1e293b] px-5 pt-5 pb-10 space-y-4 z-10 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-1">
+        {/* Header */}
+        <div className="flex items-center justify-between">
           <h2 className="text-white text-lg font-bold">Add Holding</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#1e293b] flex items-center justify-center">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-[#1e293b] flex items-center justify-center"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M18 6L6 18M6 6l12 12" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -160,6 +185,7 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
           <p className="text-[#f43f5e] text-sm bg-[#f43f5e]/10 rounded-xl px-3 py-2">{error}</p>
         )}
 
+        {/* Row 1: Ticker + Type */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -194,63 +220,46 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
           </div>
         </div>
 
+        {/* Row 2: Name */}
         <div>
           <label className="text-slate-500 text-xs font-medium mb-1 block">Name *</label>
           <input
             className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-            placeholder="Vanguard S&P 500 ETF"
+            placeholder={isHYSA ? 'High Yield Savings Account' : 'Vanguard S&P 500 ETF'}
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
           />
         </div>
 
-        <div>
-          <label className="text-slate-500 text-xs font-medium mb-1 block">Amount Invested ($) *</label>
-          <input
-            type="number"
-            className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-            placeholder="1000"
-            value={form.amountInvested}
-            onChange={(e) => set('amountInvested', e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
+        {/* Row 3: Amount + optional Interest Rate (HYSA) */}
+        <div className={isHYSA ? 'grid grid-cols-2 gap-3' : ''}>
           <div>
-            <label className="text-slate-500 text-xs font-medium mb-1 block">Return % *</label>
+            <label className="text-slate-500 text-xs font-medium mb-1 block">Amount Invested ($) *</label>
             <input
               type="number"
               className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-              placeholder="10"
-              value={form.expectedReturn}
-              onChange={(e) => set('expectedReturn', e.target.value)}
+              placeholder="1000"
+              value={form.amountInvested}
+              onChange={(e) => set('amountInvested', e.target.value)}
             />
           </div>
-          <div>
-            <label className="text-slate-500 text-xs font-medium mb-1 block">Beta *</label>
-            <input
-              type="number"
-              className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-              placeholder="1.0"
-              value={form.beta}
-              onChange={(e) => set('beta', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-slate-500 text-xs font-medium mb-1 block">Div Yield %</label>
-            <input
-              type="number"
-              className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-              placeholder="0"
-              value={form.dividendYield}
-              onChange={(e) => set('dividendYield', e.target.value)}
-            />
-          </div>
+          {isHYSA && (
+            <div>
+              <label className="text-slate-500 text-xs font-medium mb-1 block">Interest Rate (%) *</label>
+              <input
+                type="number"
+                className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
+                placeholder="4.5"
+                value={form.interestRate}
+                onChange={(e) => set('interestRate', e.target.value)}
+              />
+            </div>
+          )}
         </div>
 
         <button
           onClick={submit}
-          className="w-full py-3.5 rounded-2xl bg-[#10d982] text-[#0a0e1a] font-bold text-sm mt-2 active:opacity-90"
+          className="w-full py-3.5 rounded-2xl bg-[#10d982] text-[#0a0e1a] font-bold text-sm active:opacity-90"
         >
           Add Holding
         </button>
