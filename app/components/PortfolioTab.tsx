@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Holding, HoldingType } from '../lib/types';
 import { calculatePortfolio, fmt$, fmtPct, HOLDING_COLORS } from '../lib/calculations';
+import { lookupTicker } from '../lib/tickerData';
 
 interface PortfolioTabProps {
   holdings: Holding[];
@@ -90,9 +91,30 @@ interface AddFormProps {
 function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [error, setError] = useState('');
+  const [autoFilled, setAutoFilled] = useState(false);
 
   const set = (field: string, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
+
+  const handleTickerChange = (raw: string) => {
+    const upper = raw.toUpperCase();
+    setForm((f) => ({ ...f, ticker: upper }));
+    setAutoFilled(false);
+
+    const match = lookupTicker(upper);
+    if (match) {
+      setForm((f) => ({
+        ...f,
+        ticker: upper,
+        name: match.name,
+        type: match.type,
+        expectedReturn: String(+(match.expectedReturn * 100).toFixed(3)),
+        beta: String(match.beta),
+        dividendYield: String(+(match.dividendYield * 100).toFixed(3)),
+      }));
+      setAutoFilled(true);
+    }
+  };
 
   const submit = () => {
     if (!form.ticker.trim()) return setError('Ticker is required');
@@ -140,12 +162,22 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-slate-500 text-xs font-medium mb-1 block">Ticker *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-slate-500 text-xs font-medium">Ticker *</label>
+              {autoFilled && (
+                <span className="flex items-center gap-1 text-[#10d982] text-[10px] font-semibold">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6L9 17l-5-5" stroke="#10d982" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Auto-filled
+                </span>
+              )}
+            </div>
             <input
               className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982] uppercase"
               placeholder="VOO"
               value={form.ticker}
-              onChange={(e) => set('ticker', e.target.value.toUpperCase())}
+              onChange={(e) => handleTickerChange(e.target.value)}
             />
           </div>
           <div>
