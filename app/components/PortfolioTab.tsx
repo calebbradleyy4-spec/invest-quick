@@ -162,12 +162,14 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
   const isHYSA = form.type === 'HYSA';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end max-w-md mx-auto left-1/2 -translate-x-1/2 w-full">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Full-screen backdrop — covers everything including the nav bar */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-[#111827] rounded-t-3xl border-t border-[#1e293b] px-5 pt-5 pb-10 space-y-4 z-10 max-h-[90vh] overflow-y-auto">
+      {/* Modal card — centered, scrollable if tall */}
+      <div className="relative w-full max-w-sm bg-[#111827] rounded-3xl border border-[#1e293b] px-5 pt-5 pb-6 space-y-4 overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-white text-lg font-bold">Add Holding</h2>
