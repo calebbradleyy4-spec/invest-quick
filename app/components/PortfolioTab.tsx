@@ -203,7 +203,7 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
             </div>
             <input
               className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982] uppercase"
-              placeholder="VOO"
+              placeholder=""
               value={form.ticker}
               onChange={(e) => handleTickerChange(e.target.value)}
             />
@@ -227,7 +227,7 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
           <label className="text-slate-500 text-xs font-medium mb-1 block">Name *</label>
           <input
             className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-            placeholder={isHYSA ? 'High Yield Savings Account' : 'Vanguard S&P 500 ETF'}
+            placeholder=""
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
           />
@@ -240,7 +240,7 @@ function AddHoldingForm({ onAdd, onClose }: AddFormProps) {
             <input
               type="number"
               className="w-full bg-[#0a0e1a] border border-[#1e293b] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#10d982]"
-              placeholder="1000"
+              placeholder=""
               value={form.amountInvested}
               onChange={(e) => set('amountInvested', e.target.value)}
             />
