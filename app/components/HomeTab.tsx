@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Holding } from '../lib/types';
-import { calculatePortfolio, totalProjected, fmt$, fmtPct, HOLDING_COLORS } from '../lib/calculations';
+import { calculatePortfolio, fmt$, fmtPct, HOLDING_COLORS } from '../lib/calculations';
 
 const TIME_RANGES = ['1D', '1W', '1M', '3M', 'YTD', '1Y'];
 
@@ -25,8 +25,6 @@ export default function HomeTab({ holdings }: HomeTabProps) {
   const sorted = [...holdings].sort((a, b) => b.amountInvested - a.amountInvested);
   const displayed = showAll ? sorted : sorted.slice(0, 3);
 
-  const projected40Y = totalProjected(holdings, 40);
-
   return (
     <div className="px-4 pt-12 pb-4 space-y-5">
       {/* Header */}
@@ -48,9 +46,6 @@ export default function HomeTab({ holdings }: HomeTabProps) {
         <p className="text-slate-400 text-sm font-medium mb-1">Total Portfolio Value</p>
         <p className="text-white text-5xl font-bold tracking-tight">
           {fmt$(stats.totalValue)}
-        </p>
-        <p className="text-[#10d982] text-sm mt-1 font-medium">
-          ↑ {fmt$(projected40Y - stats.totalValue)} projected gain (40Y)
         </p>
       </div>
 
@@ -122,10 +117,9 @@ export default function HomeTab({ holdings }: HomeTabProps) {
           </button>
         </div>
         <div className="divide-y divide-[#1e293b]">
-          {displayed.map((h, i) => {
+          {displayed.map((h) => {
             const colorIndex = holdings.indexOf(h);
             const color = HOLDING_COLORS[colorIndex % HOLDING_COLORS.length];
-            const proj40 = h.amountInvested * Math.pow(1 + h.expectedReturn, 40);
             return (
               <div key={h.id} className="flex items-center px-4 py-3.5 gap-3">
                 <div
@@ -140,7 +134,6 @@ export default function HomeTab({ holdings }: HomeTabProps) {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-white text-sm font-semibold">{fmt$(h.amountInvested)}</p>
-                  <p className="text-[#10d982] text-xs font-medium">{fmt$(proj40)} / 40Y</p>
                 </div>
               </div>
             );
